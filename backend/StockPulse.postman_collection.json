@@ -1,0 +1,643 @@
+{
+	"info": {
+		"_postman_id": "a8a0c0d0-5b5a-4b1a-8f0a-9e9e9e9e9e9e",
+		"name": "StockPulse API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Sign Up",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Response has token and user\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('token');",
+									"    pm.expect(response).to.have.property('user');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"testuser@example.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has token and user\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('token');",
+									"    pm.expect(response).to.have.property('user');",
+									"});",
+									"pm.collectionVariables.set(\"authToken\", pm.response.json().token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"testuser@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/signin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Watchlists",
+			"item": [
+				{
+					"name": "Get All Watchlists",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/watchlists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"watchlists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Watchlist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.collectionVariables.set(\"watchlistId\", pm.response.json()._id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"My Tech Stocks\",\n    \"stocks\": [\"AAPL\", \"GOOGL\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/watchlists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"watchlists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Watchlist By Id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/watchlists/{{watchlistId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"watchlists",
+								"{{watchlistId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Watchlist",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"My Favorite Tech Stocks\",\n    \"stocks\": [\"AAPL\", \"GOOGL\", \"MSFT\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/watchlists/{{watchlistId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"watchlists",
+								"{{watchlistId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Stock to Watchlist",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"symbol\": \"AMZN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/watchlists/{{watchlistId}}/stocks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"watchlists",
+								"{{watchlistId}}",
+								"stocks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Stock from Watchlist",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/watchlists/{{watchlistId}}/stocks/GOOGL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"watchlists",
+								"{{watchlistId}}",
+								"stocks",
+								"GOOGL"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Watchlist",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/watchlists/{{watchlistId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"watchlists",
+								"{{watchlistId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stocks",
+			"item": [
+				{
+					"name": "Search Stocks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/stocks/search?query=AAPL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"stocks",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "AAPL"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stock Quote",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/stocks/{{stockSymbol}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"stocks",
+								"{{stockSymbol}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Multiple Stock Quotes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"symbols\": [\"AAPL\", \"GOOGL\", \"MSFT\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/stocks/quotes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"stocks",
+								"quotes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stock History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/stocks/{{stockSymbol}}/history?period=daily",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"stocks",
+								"{{stockSymbol}}",
+								"history"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "daily"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "News",
+			"item": [
+				{
+					"name": "Get Top Business News",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/news/top",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"news",
+								"top"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get News For Stock",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/news/{{stockSymbol}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"news",
+								"{{stockSymbol}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Analyze News For Stock",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/news/{{stockSymbol}}/analyze",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"news",
+								"{{stockSymbol}}",
+								"analyze"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/api"
+		},
+		{
+			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "watchlistId",
+			"value": ""
+		},
+		{
+			"key": "stockSymbol",
+			"value": "AAPL"
+		}
+	]
+}
