@@ -3,7 +3,7 @@ import { IWatchlist } from '../types';
 
 const watchlistSchema = new Schema<IWatchlist>({
   userId: {
-    type: String,
+    type: Schema.Types.ObjectId,
     required: true,
     ref: 'User'
   },

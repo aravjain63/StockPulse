@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 // User related types
 export interface IUser extends Document {
@@ -23,7 +23,8 @@ export interface IUserResponse {
 // Watchlist related types
 export interface IWatchlist extends Document {
   _id: string;
-  userId: string;
+  userId: mongoose.Schema.Types.ObjectId
+;
   name: string;
   stocks: string[]; // Array of stock symbols
   createdAt: Date;
