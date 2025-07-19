@@ -625,7 +625,7 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "http://localhost:5000/api"
+			"value": "https://stockpulse-1pic.onrender.com/api"
 		},
 		{
 			"key": "authToken",
