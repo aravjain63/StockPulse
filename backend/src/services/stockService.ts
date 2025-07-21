@@ -4,7 +4,7 @@ import { IStock, IStockHistory } from '../types';
 
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
-type datetypes = 'daily'| 'monthly' |'weekly';
+type datetypes = 'daily'| 'monthly' |'weekly'|'yearly';
 export class StockService {
   private apiKey: string;
 
@@ -37,7 +37,10 @@ export class StockService {
         price: parseFloat(data['05. price']),
         change: parseFloat(data['09. change']),
         changePercent: parseFloat(data['10. change percent'].replace('%', '')),
-        volume: parseInt(data['06. volume'])
+        volume: parseInt(data['06. volume']),
+        high: parseInt(data['03. high']),
+        low: parseInt(data['04. low']),
+        prevclose:parseInt(data['08. previous close']),
       };
     } catch (error) {
       console.error('Error fetching stock quote:', error);
@@ -63,7 +66,8 @@ export class StockService {
       const functionMap = {
         daily: 'TIME_SERIES_DAILY',
         weekly: 'TIME_SERIES_WEEKLY',
-        monthly: 'TIME_SERIES_MONTHLY'
+        monthly: 'TIME_SERIES_MONTHLY',
+        yearly: 'TIME_SERIES_YEARLY'
       };
 
       const response = await axios.get(ALPHA_VANTAGE_BASE_URL, {

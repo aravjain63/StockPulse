@@ -40,6 +40,9 @@ export interface IStock {
   changePercent: number;
   volume: number;
   marketCap?: number;
+  high:number;
+  low:number;
+  prevclose: number;
 }
 
 export interface IStockHistory {
