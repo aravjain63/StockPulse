@@ -301,7 +301,7 @@ export function StockDetail() {
             </Card>
           </div>
 
-      </div>
+      </div>  
 
     </>
   );

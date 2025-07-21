@@ -4,7 +4,7 @@ import { IStock, IStockHistory } from '../types';
 
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
-type datetypes = 'daily'| 'monthly' |'weekly'|'yearly';
+type datetypes = 'daily'| 'monthly' |'weekly';
 export class StockService {
   private apiKey: string;
 
@@ -24,8 +24,16 @@ export class StockService {
           apikey: this.apiKey
         }
       });
+      const response2 = await axios.get(ALPHA_VANTAGE_BASE_URL, {
+        params: {
+          function: 'OVERVIEW',
+          symbol: symbol,
+          apikey: this.apiKey
+        }
+      });
 
       const data = response.data['Global Quote'];
+      const data2 = response2.data['Name']
       
       if (!data) {
         throw new Error('Invalid stock symbol or API limit reached');
@@ -33,7 +41,7 @@ export class StockService {
 
       return {
         symbol: data['01. symbol'],
-        name: data['01. symbol'], // Alpha Vantage doesn't provide company name in this endpoint
+        name: data2, // Alpha Vantage doesn't provide company name in this endpoint
         price: parseFloat(data['05. price']),
         change: parseFloat(data['09. change']),
         changePercent: parseFloat(data['10. change percent'].replace('%', '')),
@@ -66,15 +74,16 @@ export class StockService {
       const functionMap = {
         daily: 'TIME_SERIES_DAILY',
         weekly: 'TIME_SERIES_WEEKLY',
-        monthly: 'TIME_SERIES_MONTHLY',
-        yearly: 'TIME_SERIES_YEARLY'
+        monthly: 'TIME_SERIES_MONTHLY'
       };
 
       const response = await axios.get(ALPHA_VANTAGE_BASE_URL, {
         params: {
           function: functionMap[period],
           symbol: symbol,
+          outputsize: "compact",
           apikey: this.apiKey
+
         }
       });
 
@@ -101,4 +110,5 @@ export class StockService {
       throw new Error('Failed to fetch stock history');
     }
   }
+
 }
