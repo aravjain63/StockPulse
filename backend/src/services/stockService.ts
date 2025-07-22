@@ -24,29 +24,27 @@ export class StockService {
           apikey: this.apiKey
         }
       });
-      // const response2 = await axios.get(ALPHA_VANTAGE_BASE_URL, {
-      //   params: {
-      //     function: 'OVERVIEW',
-      //     symbol: symbol,
-      //     apikey: this.apiKey
-      //   }
-      // });
+      const response2 = await axios.get(ALPHA_VANTAGE_BASE_URL, {
+        params: {
+          function: 'OVERVIEW',
+          symbol: symbol,
+          apikey: this.apiKey
+        }
+      });
 
       const data = response.data['Global Quote'];
-      // const data2 = response2.data['Name']
+      const data2 = response2.data['Name']
       
       if (!data) {
-        console.error("Invalid response from Alpha Vantage (GLOBAL_QUOTE):", response.data);
         throw new Error('Invalid stock symbol or API limit reached');
       }
-      // if (!data2) {
-      //   console.error("Invalid response from Alpha Vantage (OVERVIEW):", response2.data);
-      //   throw new Error('Invalid stock symbol or Name API not available');
-      // }
+      if (!data2) {
+        throw new Error('Invalid stock symbol or Name API not available');
+      }
 
       return {
         symbol: data['01. symbol'],
-        name: 'data2', // Alpha Vantage doesn't provide company name in this endpoint
+        name: data2, // Alpha Vantage doesn't provide company name in this endpoint
         price: parseFloat(data['05. price']),
         change: parseFloat(data['09. change']),
         changePercent: parseFloat(data['10. change percent'].replace('%', '')),
@@ -55,8 +53,8 @@ export class StockService {
         low: parseInt(data['04. low']),
         prevclose:parseInt(data['08. previous close']),
       };
-    } catch (error: any) {
-      console.error('Error fetching stock quote:', error.response ? error.response.data : error.message);
+    } catch (error) {
+      console.error('Error fetching stock quote:', error);
       throw new Error('Failed to fetch stock data');
     }
   }
@@ -69,8 +67,8 @@ export class StockService {
       return results
         .filter(result => result.status === 'fulfilled')
         .map(result => (result as PromiseFulfilledResult<IStock>).value);
-    } catch (error: any) {
-      console.error('Error fetching multiple stock quotes:', error.response ? error.response.data : error.message);
+    } catch (error) {
+      console.error('Error fetching multiple stock quotes:', error);
       throw new Error('Failed to fetch stock data');
     }
   }
@@ -97,7 +95,6 @@ export class StockService {
       );
 
       if (!timeSeriesKey) {
-        console.error("Invalid response format from Alpha Vantage:", response.data);
         throw new Error('Invalid response format');
       }
 
@@ -111,8 +108,8 @@ export class StockService {
         close: parseFloat(data['4. close']),
         volume: parseInt(data['5. volume'])
       })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    } catch (error: any) {
-      console.error('Error fetching stock history:', error.response ? error.response.data : error.message);
+    } catch (error) {
+      console.error('Error fetching stock history:', error);
       throw new Error('Failed to fetch stock history');
     }
   }
