@@ -20,6 +20,7 @@ export class NewsService {
         q: `${symbol} stock OR ${symbol} company`,
         language: 'en',
         sortBy: 'relevancy',
+        pageSize: '4',
         apiKey: this.apiKey
       };
 

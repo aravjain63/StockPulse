@@ -38,6 +38,9 @@ export class StockService {
       if (!data) {
         throw new Error('Invalid stock symbol or API limit reached');
       }
+      if (!data2) {
+        throw new Error('Invalid stock symbol or Name API not available');
+      }
 
       return {
         symbol: data['01. symbol'],
