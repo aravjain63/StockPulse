@@ -24,29 +24,29 @@ export class StockService {
           apikey: this.apiKey
         }
       });
-      const response2 = await axios.get(ALPHA_VANTAGE_BASE_URL, {
-        params: {
-          function: 'OVERVIEW',
-          symbol: symbol,
-          apikey: this.apiKey
-        }
-      });
+      // const response2 = await axios.get(ALPHA_VANTAGE_BASE_URL, {
+      //   params: {
+      //     function: 'OVERVIEW',
+      //     symbol: symbol,
+      //     apikey: this.apiKey
+      //   }
+      // });
 
       const data = response.data['Global Quote'];
-      const data2 = response2.data['Name']
+      // const data2 = response2.data['Name']
       
       if (!data) {
         console.error("Invalid response from Alpha Vantage (GLOBAL_QUOTE):", response.data);
         throw new Error('Invalid stock symbol or API limit reached');
       }
-      if (!data2) {
-        console.error("Invalid response from Alpha Vantage (OVERVIEW):", response2.data);
-        throw new Error('Invalid stock symbol or Name API not available');
-      }
+      // if (!data2) {
+      //   console.error("Invalid response from Alpha Vantage (OVERVIEW):", response2.data);
+      //   throw new Error('Invalid stock symbol or Name API not available');
+      // }
 
       return {
         symbol: data['01. symbol'],
-        name: data2, // Alpha Vantage doesn't provide company name in this endpoint
+        name: 'data2', // Alpha Vantage doesn't provide company name in this endpoint
         price: parseFloat(data['05. price']),
         change: parseFloat(data['09. change']),
         changePercent: parseFloat(data['10. change percent'].replace('%', '')),
