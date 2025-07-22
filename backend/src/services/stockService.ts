@@ -55,7 +55,7 @@ export class StockService {
         low: parseInt(data['04. low']),
         prevclose:parseInt(data['08. previous close']),
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching stock quote:', error.response ? error.response.data : error.message);
       throw new Error('Failed to fetch stock data');
     }
@@ -69,7 +69,7 @@ export class StockService {
       return results
         .filter(result => result.status === 'fulfilled')
         .map(result => (result as PromiseFulfilledResult<IStock>).value);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching multiple stock quotes:', error.response ? error.response.data : error.message);
       throw new Error('Failed to fetch stock data');
     }
@@ -111,7 +111,7 @@ export class StockService {
         close: parseFloat(data['4. close']),
         volume: parseInt(data['5. volume'])
       })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching stock history:', error.response ? error.response.data : error.message);
       throw new Error('Failed to fetch stock history');
     }
