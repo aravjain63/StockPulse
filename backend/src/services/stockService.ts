@@ -36,9 +36,11 @@ export class StockService {
       const data2 = response2.data['Name']
       
       if (!data) {
+        console.error("Invalid response from Alpha Vantage (GLOBAL_QUOTE):", response.data);
         throw new Error('Invalid stock symbol or API limit reached');
       }
       if (!data2) {
+        console.error("Invalid response from Alpha Vantage (OVERVIEW):", response2.data);
         throw new Error('Invalid stock symbol or Name API not available');
       }
 
@@ -54,7 +56,7 @@ export class StockService {
         prevclose:parseInt(data['08. previous close']),
       };
     } catch (error) {
-      console.error('Error fetching stock quote:', error);
+      console.error('Error fetching stock quote:', error.response ? error.response.data : error.message);
       throw new Error('Failed to fetch stock data');
     }
   }
@@ -68,7 +70,7 @@ export class StockService {
         .filter(result => result.status === 'fulfilled')
         .map(result => (result as PromiseFulfilledResult<IStock>).value);
     } catch (error) {
-      console.error('Error fetching multiple stock quotes:', error);
+      console.error('Error fetching multiple stock quotes:', error.response ? error.response.data : error.message);
       throw new Error('Failed to fetch stock data');
     }
   }
@@ -95,6 +97,7 @@ export class StockService {
       );
 
       if (!timeSeriesKey) {
+        console.error("Invalid response format from Alpha Vantage:", response.data);
         throw new Error('Invalid response format');
       }
 
@@ -109,7 +112,7 @@ export class StockService {
         volume: parseInt(data['5. volume'])
       })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     } catch (error) {
-      console.error('Error fetching stock history:', error);
+      console.error('Error fetching stock history:', error.response ? error.response.data : error.message);
       throw new Error('Failed to fetch stock history');
     }
   }
