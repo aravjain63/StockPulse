@@ -14,13 +14,13 @@ export class NewsService {
     }
   }
 
-  async getNewsForStock(symbol: string, date?: string): Promise<INewsArticle[]> {
+  async getNewsForStock(symbol: string, date?: string, pageSize: string='4'): Promise<INewsArticle[]> {
     try {
       const params: any = {
         q: `${symbol} stock OR ${symbol} company`,
         language: 'en',
         sortBy: 'relevancy',
-        pageSize: '4',
+        pageSize: pageSize,
         apiKey: this.apiKey
       };
 

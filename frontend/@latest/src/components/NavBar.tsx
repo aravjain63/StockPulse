@@ -1,33 +1,34 @@
-import { Home, Search, BarChart3, User } from "lucide-react";
+import { Home, Search, BarChart3, User, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function NavBar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-transparent backdrop-blur supports-[backdrop-filter]:bg-transparent pb-2 mb-4">
-      <div className="container flex h-10 max-w-screen-2xl items-center justify-between" >
-        {/* Left side - Logo */}
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/5 backdrop-blur-md px-4 py-3 shadow-lg">
+      <div className="container flex h-10 max-w-screen-2xl items-center justify-between">
+        {/* Left - Logo */}
         <div className="flex items-center space-x-2">
-          <BarChart3 className="h-6 w-6 text-white" />
-          <span className="hidden font-bold sm:inline-block text-xl text-white">
+          <TrendingUp className="h-8 w-8 text-[#3b82f6]" />
+          <span className="hidden sm:inline-block font-bold text-xl text-white tracking-wide">
             StockPulse
           </span>
         </div>
 
-        {/* Right side - Navigation buttons */}
-        <div className="flex items-center space-x-2">
-          <Button variant="default" size="sm" className="h-9">
+        {/* Right - Navigation */}
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
             <Home className="mr-2 h-4 w-4" />
             Dashboard
           </Button>
-          <Button variant="default" size="sm" className="h-9">
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
             <Search className="mr-2 h-4 w-4" />
             Discover
           </Button>
-          <Button variant="ghost" size="sm" className="h-9 w-9 px-0 text-white">
-            <User className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+            <User className="h-5 w-5" />
           </Button>
         </div>
       </div>
     </header>
   );
 }
+  

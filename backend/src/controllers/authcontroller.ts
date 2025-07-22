@@ -36,6 +36,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       firstName,
       lastName
     });
+    // console.log(user);
 
     await user.save();//custom method to hash passwords
 

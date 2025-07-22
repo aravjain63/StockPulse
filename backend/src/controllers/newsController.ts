@@ -44,7 +44,8 @@ export const analyzeNewsForStock = async (req: Request, res: Response): Promise<
     }
 
     // First, get the news articles
-    const articles = await newsService.getNewsForStock(symbol.toUpperCase(), date as string);
+    const pageSize='10'
+    const articles = await newsService.getNewsForStock(symbol.toUpperCase(), date as string, pageSize as string);
     
     if (articles.length === 0) {
       res.status(404).json({ message: 'No news articles found for this stock' });

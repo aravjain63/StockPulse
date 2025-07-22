@@ -24,7 +24,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     }
 
     const decoded = jwt.verify(token, config.jwtSecret) as { userId: string };
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(decoded.userId).select('-password');//dont output password
 
     if (!user) {
       res.status(401).json({ message: 'Invalid token' });

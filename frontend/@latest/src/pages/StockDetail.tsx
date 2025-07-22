@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { NavBar } from "@/components/NavBar";
 import {
   TrendingUp,
   TrendingDown,
@@ -19,8 +20,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import API from "@/lib/API";
 
-// const BASE_URL = "https://stockpulse-1pic.onrender.com/api";
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const STOCK_SYMBOL = "AAPL";
 
@@ -38,11 +38,12 @@ export function StockDetail() {
   });
   const [news, setNews] = useState<any[]>([]);
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [expandedNews, setExpandedNews] = useState<number | null>(null);
   const [isAiSummaryOpen, setIsAiSummaryOpen] = useState(false);
   const [isLoadingAiSummary, setIsLoadingAiSummary] = useState(false);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [sentiment, setsentiment] = useState<string | null>(null);
 
   const currentChartData = chartData[selectedPeriod] || [];
 
@@ -77,31 +78,60 @@ export function StockDetail() {
 
   // Fetch news
   useEffect(() => {
-    API
-      .get(`${BASE_URL}/news/${STOCK_SYMBOL}`)
-      .then(res => setNews(res.data))
-      .catch(err => console.error("News fetch error:", err));
-  }, []);
-
-  const handleGetAiSummary = async () => {
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+    
+    API.get(`/news/${STOCK_SYMBOL}`, {
+      params: { date: formattedDate }
+    })
+    .then((res) => setNews(res.data))
+    .catch((err) => console.error("News fetch error:", err));
+  }, [selectedDate]);
+  
+//   const handleGetAiSummary = async () => {
+//     const formattedDate = format(selectedDate, "yyyy-MM-dd");
+//   setIsLoadingAiSummary(true);
+//   try {
+//     const response = await API.get(`${BASE_URL}/stocks/${STOCK_SYMBOL}/analyze`,{
+//       params: { date: formattedDate }
+//     });
+//     setAiSummary(response.data.analysis.summary);  
+//     setsentiment(response.data.analysis.sentiment);  
+//     setIsAiSummaryOpen(true);
+//   } catch (error) {
+//     console.error("Failed to fetch AI summary:", error);
+//   } finally {
+//     setIsLoadingAiSummary(false);
+//   }
+// };
+useEffect(() => {
+  const fetchAISummary = async () => {
     setIsLoadingAiSummary(true);
-    setTimeout(() => {
-      setAiSummary(`
-        • Strong quarterly performance with revenue beating expectations by 3.2%
-        • iPhone 15 series showing robust sales momentum globally
-        • Services revenue continues to grow at 16% year-over-year
-        • Management guidance for next quarter appears conservative
-        • Overall sentiment: POSITIVE with bullish outlook for next 6 months
-      `);
+    setAiSummary(null); // Clear old summary
+    setIsAiSummaryOpen(false);
+
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+    try {
+      const response = await API.get(`${BASE_URL}/stocks/${STOCK_SYMBOL}/analyze`, {
+        params: { date: formattedDate },
+      });
+      setAiSummary(response.data.analysis.summary);
+      setsentiment(response.data.analysis.sentiment);
+    } catch (error) {
+      console.error("Failed to fetch AI summary:", error);
+    } finally {
       setIsLoadingAiSummary(false);
-      setIsAiSummaryOpen(true);
-    }, 2000);
+    }
   };
 
-  if (!stockData) return <div className="text-white">Loading stock info...</div>;
+  fetchAISummary();
+}, [selectedDate]);
+
+  if (!stockData) return <div className="text-white text-4xl">Loading stock info...</div>;
 
   return (
-    <>
+    <div>
+    <NavBar></NavBar>
+    <div className="m-5 ">
       <div className="pb-8 text-white">
         <h1 className="text-5xl font-extrabold text-left">{stockData.name}</h1>
         <div className="flex items-baseline gap-4 mt-2">
@@ -139,6 +169,7 @@ export function StockDetail() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        {/* news service */}
         <div className="lg:col-span-2">
           <Card className="bg-white/5 backdrop-blur-md border border-white/10 text-white shadow-sm rounded-xl">
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
@@ -206,46 +237,38 @@ export function StockDetail() {
         {/* AI Analysis */}
         <div>
           <Card className="bg-white/5 backdrop-blur-md border border-white/10 text-white shadow-sm rounded-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl">AI Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!aiSummary ? (
-                <Button
-                  variant="secondary"
-                  onClick={handleGetAiSummary}
-                  disabled={isLoadingAiSummary}
-                  className="w-full"
-                >
-                  {isLoadingAiSummary ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    "Get AI Summary"
-                  )}
-                </Button>
-              ) : (
-                <Collapsible open={isAiSummaryOpen} onOpenChange={setIsAiSummaryOpen}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="secondary" className="w-full">
-                      <span className="mr-2">AI Summary</span>
-                      <ChevronDown className={cn("h-4 w-4 transition-transform", isAiSummaryOpen && "rotate-180")} />
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-4">
-                    <div className="space-y-2">
-                      <Badge className="mb-2 w-full">Sentiment: Positive</Badge>
-                      <div className="text-sm whitespace-pre-line text-left">{aiSummary}</div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
-            </CardContent>
-          </Card>
+  <CardHeader>
+    <CardTitle className="text-2xl">AI Analysis</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {isLoadingAiSummary ? (
+      <Button variant="secondary" disabled className="w-full">
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        Analyzing...
+      </Button>
+    ) : aiSummary ? (
+      <Collapsible open={isAiSummaryOpen} onOpenChange={setIsAiSummaryOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="secondary" className="w-full">
+            <span className="mr-2">AI Summary</span>
+            <ChevronDown className={cn("h-4 w-4 transition-transform", isAiSummaryOpen && "rotate-180")} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-4">
+          <div className="space-y-2">
+            <Badge className="mb-2 w-full">Sentiment: {sentiment}</Badge>
+            <div className="text-sm whitespace-pre-line text-left">{aiSummary}</div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    ) : (
+      <p className="text-muted-foreground text-sm">No summary available for this date.</p>
+    )}
+  </CardContent>
+</Card>
         </div>
       </div>
-    </>
+    </div>
+    </div>
   );
 }

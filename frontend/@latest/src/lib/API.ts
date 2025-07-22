@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-    // baseURL: "https://stockpulse-1pic.onrender.com/api",
-    baseURL: "http://localhost:5000/api",
+    baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 // Interceptor to attach token
