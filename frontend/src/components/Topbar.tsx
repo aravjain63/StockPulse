@@ -1,12 +1,22 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Home, Search, TrendingUp, User } from "lucide-react";
+import { Search, TrendingUp, User } from "lucide-react";
 
 export default function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // ────────── Search state ──────────
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
@@ -14,12 +24,14 @@ export default function Topbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
+  /** Query Alpha Vantage suggestions */
   const fetchSuggestions = async (q: string) => {
     if (!q) return setResults([]);
     try {
       const res = await fetch(
-        `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${q}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
-        
+        `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${q}&apikey=${
+          import.meta.env.VITE_ALPHA_VANTAGE_API_KEY
+        }`
       );
       const data = await res.json();
       setResults(data.bestMatches || []);
@@ -28,6 +40,7 @@ export default function Topbar() {
     }
   };
 
+  // Debounce search typing
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchSuggestions(query);
@@ -35,6 +48,7 @@ export default function Topbar() {
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
+  /** When user clicks a symbol from suggestions */
   const handleSymbolClick = (symbol: string) => {
     setSearchOpen(false);
     setQuery("");
@@ -42,13 +56,10 @@ export default function Topbar() {
     navigate(`/stock/${symbol}`);
   };
 
-  // Close on outside click
+  // Close the suggestion box when clicking outside it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
         setSearchOpen(false);
       }
     };
@@ -56,10 +67,17 @@ export default function Topbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ────────── Logout handler ──────────
+  const handleLogout = () => {
+    localStorage.removeItem("token");    // adjust keys if different
+    localStorage.removeItem("refresh");
+    navigate("/", { replace: true });
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
-        {/* Brand */}
+        {/* ─ Brand ─ */}
         <div className="mr-4 flex">
           <button
             onClick={() => navigate("/stock/AAPL")}
@@ -72,13 +90,14 @@ export default function Topbar() {
           </button>
         </div>
 
-        {/* Nav */}
+        {/* ─ Navigation / Discover search ─ */}
         <nav className="relative flex items-center space-x-1 text-sm font-medium">
           <Button
             variant={searchOpen ? "default" : "ghost"}
             size="sm"
             onClick={() => setSearchOpen((prev) => !prev)}
             className="h-9"
+            aria-pressed={searchOpen}
           >
             <Search className="mr-2 h-4 w-4" />
             Discover
@@ -93,8 +112,9 @@ export default function Topbar() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search for a stock (AAPL, TSLA...)"
+                placeholder="Search for a stock (AAPL, TSLA, …)"
               />
+
               {results.length > 0 && (
                 <ul className="mt-2 max-h-60 overflow-y-auto text-sm">
                   {results.map((match) => (
@@ -113,11 +133,31 @@ export default function Topbar() {
           )}
         </nav>
 
-        {/* Right Side */}
+        {/* ─ Right‑hand actions ─ */}
         <div className="ml-auto flex items-center space-x-2">
-          <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
-            <User className="h-4 w-4" />
-          </Button>
+          {/* Profile / Logout dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
+                <User className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuLabel className="text-xs">Account</DropdownMenuLabel>
+              {/* Example profile page link (optional) */}
+              {/* <DropdownMenuItem onSelect={() => navigate("/profile")}>
+                Profile
+              </DropdownMenuItem> */}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={handleLogout}
+                className="text-destructive focus:bg-destructive/10"
+              >
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
