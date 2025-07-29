@@ -1,10 +1,13 @@
 import { ArrowRight, TrendingUp, PieChart, Brain, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-stock-chart.jpg";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 const LandingPage = () => {
+
   const features = [
     {
       icon: TrendingUp,
@@ -27,6 +30,14 @@ const LandingPage = () => {
       description: "Create and manage personalized watchlists to track your favorite stocks and portfolios"
     }
   ];
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  useEffect(() => {
+  if (token) {
+    // toast.error("you are already logged in");
+    navigate("/stock/AAPL", { replace: false });
+  }
+}, [token, navigate]);
 
   return (
     <div className="min-h-screen bg-background">

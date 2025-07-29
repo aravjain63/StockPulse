@@ -11,12 +11,12 @@ import StockDetails from "./pages/StockDetails";
 // import StockDiscovery from "./pages/StockDiscovery";
 import NotFound from "./pages/NotFound";
 import Topbar from "./components/Topbar";
-
+import ErrorPage from "./pages/ErrorPage";
 
 function AppContent() {
   const location = useLocation();
   const showTopbar = !["/", "/signup", "/login"].includes(location.pathname);
-
+  
   return (
     <>
       <Toaster />
@@ -29,6 +29,7 @@ function AppContent() {
         {/* <Route path="/dashboard" element={<Dashboard />} /> */}
         {/* <Route path="/watchlist/:id" element={<WatchlistDetails />} /> */}
         <Route path="/stock/:symbol" element={<StockDetails />} />
+        <Route path="/error" element={<ErrorPage />} />
         {/* <Route path="/stocks" element={<StockDiscovery />} /> */}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

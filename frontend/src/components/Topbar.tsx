@@ -18,7 +18,7 @@ export default function Topbar() {
     if (!q) return setResults([]);
     try {
       const res = await fetch(
-        `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${q}&apikey=${import.meta.env.ALPHA_VANTAGE_API_KEY}`
+        `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${q}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
         
       );
       const data = await res.json();

@@ -17,12 +17,15 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL // replace with your actual ba
 export default function StockDetails() {
   const { symbol } = useParams();
   const navigate = useNavigate();
+
+  /* ─────────────────── state ─────────────────── */
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     return yesterday;
-  }); const [isAiSummaryOpen, setIsAiSummaryOpen] = useState(false);
+  });
+  const [isAiSummaryOpen, setIsAiSummaryOpen] = useState(false);
   const [expandedNews, setExpandedNews] = useState<number | null>(null);
 
   const [stockData, setStockData] = useState<any | null>(null);
@@ -35,59 +38,89 @@ export default function StockDetails() {
   const [loadingNews, setLoadingNews] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
 
+  const [alphaError, setAlphaError] = useState(false); // 🔑 NEW
+
   const token = localStorage.getItem("token");
+
+  /* ─────────────────── helpers ─────────────────── */
+  const periods = ["1D", "1W", "1M"];
+  const mapping: Record<string, string> = { "1D": "daily", "1W": "weekly", "1M": "monthly" };
+
+  /* ─────────────────── auth guard ─────────────────── */
   useEffect(() => {
-  if (!token) {
-    toast.error("Need to login", {
-      description: "Please login to access stock details",
-    });
-    navigate("/", { replace: true });
-  }
-}, [token, navigate]);
-  
+    if (!token) {
+      toast.error("Need to login", { description: "Please login to access stock details" });
+      navigate("/", { replace: true });
+    }
+  }, [token, navigate]);
+
+  /* ─────────────────── fetch current quote ─────────────────── */
   useEffect(() => {
     if (!symbol || !token) return;
     setLoadingStock(true);
-    axios.get(`${baseUrl}/stocks/${symbol}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => setStockData(res.data))
-      .catch(console.error)
+
+    axios
+      .get(`${baseUrl}/stocks/${symbol}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        if (res.data?.message === "Failed to fetch stock quote") {
+          setAlphaError(true);
+          return;
+        }
+        setStockData(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        setAlphaError(true);
+      })
       .finally(() => setLoadingStock(false));
   }, [symbol, token]);
 
+  /* ─────────────────── fetch chart history ─────────────────── */
   useEffect(() => {
-    if (!symbol || !token || !selectedPeriod) return;
+    if (!symbol || !token || !selectedPeriod || alphaError) return;
     setLoadingChart(true);
-    axios.get(`${baseUrl}/stocks/${symbol}/history?period=${selectedPeriod}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+
+    axios
+      .get(`${baseUrl}/stocks/${symbol}/history?period=${selectedPeriod}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((res) => {
+        if (res.data?.message === "Failed to fetch stock quote") {
+          setAlphaError(true);
+          return;
+        }
         const formatted = res.data.map((entry: any) => ({
           time: entry.date,
           price: entry.high,
         }));
         setChartData(formatted);
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setAlphaError(true);
+      })
       .finally(() => setLoadingChart(false));
-  }, [symbol, selectedPeriod, token]);
+  }, [symbol, selectedPeriod, token, alphaError]);
 
+  /* ─────────────────── fetch news ─────────────────── */
   useEffect(() => {
-    if (!symbol || !token || !selectedDate) return;
+    if (!symbol || !token || !selectedDate || alphaError) return;
     setLoadingNews(true);
+
     const dateStr = selectedDate.toISOString().split("T")[0];
-    axios.get(`${baseUrl}/news/${symbol}/?date=${dateStr}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    axios
+      .get(`${baseUrl}/news/${symbol}/?date=${dateStr}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((res) => setNews(res.data))
       .catch(console.error)
       .finally(() => setLoadingNews(false));
-  }, [symbol, selectedDate, token]);
+  }, [symbol, selectedDate, token, alphaError]);
 
+  /* ─────────────────── AI summary ─────────────────── */
   const fetchAiSummary = async () => {
     if (!symbol || !token) return;
-    
+
     setIsAiSummaryOpen(false);
     setLoadingAI(true);
     try {
@@ -98,88 +131,83 @@ export default function StockDetails() {
       setIsAiSummaryOpen(true);
     } catch (err) {
       console.error("AI summary error:", err);
-      toast.error("AI summary error", {
-        description: "AI service is currently down"
-      });
+      toast.error("AI summary error", { description: "AI service is currently down" });
     } finally {
       setLoadingAI(false);
     }
   };
- useEffect(() => {
-  if (isAiSummaryOpen) {
-    fetchAiSummary();
-  }
-}, [selectedDate]);
 
-  const periods = ["1D", "1W", "1M"];
-  const mapping = {"1D":"daily","1W":"weekly", "1M":"monthly"};
+  useEffect(() => {
+    if (isAiSummaryOpen) fetchAiSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate]);
 
+  /* ─────────────────── redirect on Alpha Vantage error ─────────────────── */
+  useEffect(() => {
+    if (alphaError) navigate("/error", { replace: true });
+  }, [alphaError, navigate]);
+
+  /* ─────────────────── render ─────────────────── */
+  if (!token) return null; // safeguard
 
   return (
     <div className="min-h-screen bg-background mx-4">
       <div className="container mx-auto p-6">
+        {/* ───── stock header ───── */}
         <div className="flex items-center gap-4 mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <div>
-                <h1 className="text-5xl font-bold mb-1">{stockData?.name || "Loading..."}</h1>
+                <h1 className="text-5xl font-bold mb-1">
+                  {loadingStock ? "Loading…" : stockData?.name}
+                </h1>
                 <p className="text-lg text-muted-foreground">{stockData?.symbol}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Price Section */}
+        {/* ───── price section ───── */}
         {stockData && (
           <div className="mb-8">
             <div className="flex items-baseline gap-4">
               <span className="text-5xl font-bold">${stockData.price.toFixed(2)}</span>
               <div
-                className={`flex items-center gap-1 text-xl ${stockData.change >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
+                className={`flex items-center gap-1 text-xl ${
+                  stockData.change >= 0 ? "text-green-600" : "text-red-600"
+                }`}
               >
                 {stockData.change >= 0 ? (
                   <TrendingUp className="h-5 w-5" />
                 ) : (
                   <TrendingDown className="h-5 w-5" />
                 )}
-                {stockData.change >= 0 ? "+" : ""}${stockData.change.toFixed(2)}
-                ({stockData.change >= 0 ? "+" : ""}
+                {stockData.change >= 0 ? "+" : ""}${stockData.change.toFixed(2)}(
+                {stockData.change >= 0 ? "+" : ""}
                 {stockData.changePercent.toFixed(2)}%)
               </div>
             </div>
           </div>
         )}
 
-        {/* Key Metrics */}
+        {/* ───── key metrics ───── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">Volume</div>
-              <div className="text-lg font-semibold">{stockData?.volume}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">High</div>
-              <div className="text-lg font-semibold">{stockData?.high}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">Low</div>
-              <div className="text-lg font-semibold">{stockData?.low}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">Prev Close</div>
-              <div className="text-lg font-semibold">{stockData?.prevclose}</div>
-            </CardContent>
-          </Card>
+          {[
+            ["Volume", stockData?.volume],
+            ["High", stockData?.high],
+            ["Low", stockData?.low],
+            ["Prev Close", stockData?.prevclose],
+          ].map(([label, value]) => (
+            <Card key={label}>
+              <CardContent className="p-4">
+                <div className="text-sm text-muted-foreground">{label}</div>
+                <div className="text-lg font-semibold">{value ?? "-"}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Chart */}
+        {/* ───── chart ───── */}
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -188,7 +216,7 @@ export default function StockDetails() {
                 {periods.map((period) => (
                   <Button
                     key={period}
-                    variant={selectedPeriod === period ? "default" : "outline"}
+                    variant={selectedPeriod === mapping[period] ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedPeriod(mapping[period])}
                   >
@@ -201,31 +229,58 @@ export default function StockDetails() {
           <CardContent>
             <div className="h-96 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <AreaChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                >
                   <defs>
                     <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
                       <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="2 2" stroke="hsl(var(--border))" strokeOpacity={0.3} />
-                  <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(2)}`} />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke="hsl(var(--border))"
+                    strokeOpacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="time"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(v) => `$${v.toFixed(2)}`}
+                  />
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
-                    formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                    }}
+                    labelStyle={{ color: "hsl(var(--foreground))" }}
+                    formatter={(v: number) => [`$${v.toFixed(2)}`, "Price"]}
                     labelFormatter={(label) => `Time: ${label}`}
                   />
-                  <Area type="monotone" dataKey="price" stroke="hsl(var(--primary))" strokeWidth={3} fill="url(#priceGradient)" />
+                  <Area
+                    type="monotone"
+                    dataKey="price"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={3}
+                    fill="url(#priceGradient)"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* News and AI Summary */}
+        {/* ───── news & AI analysis ───── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ── news list ── */}
           <div className="lg:col-span-2">
             <Card className="p-2">
               <CardHeader>
@@ -262,16 +317,31 @@ export default function StockDetails() {
                           <span>•</span>
                           <span>{new Date(article.publishedAt).toLocaleString()}</span>
                         </div>
-                        <Collapsible open={expandedNews === idx} onOpenChange={(open) => setExpandedNews(open ? idx : null)}>
+                        <Collapsible
+                          open={expandedNews === idx}
+                          onOpenChange={(open) => setExpandedNews(open ? idx : null)}
+                        >
                           <CollapsibleTrigger asChild>
                             <Button variant="ghost" size="sm" className="p-0 h-auto">
-                              <span className="mr-1">{expandedNews === idx ? "Read Less" : "Read More"}</span>
-                              <ChevronDown className={cn("h-4 w-4 transition-transform", expandedNews === idx && "rotate-180")} />
+                              <span className="mr-1">
+                                {expandedNews === idx ? "Read Less" : "Read More"}
+                              </span>
+                              <ChevronDown
+                                className={cn(
+                                  "h-4 w-4 transition-transform",
+                                  expandedNews === idx && "rotate-180"
+                                )}
+                              />
                             </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="mt-2">
                             <p className="text-sm text-muted-foreground">{article.content}</p>
-                            <a href={article.url} target="_blank" className="flex items-center gap-1 mt-2 text-blue-500 text-sm">
+                            <a
+                              href={article.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 mt-2 text-blue-500 text-sm"
+                            >
                               <ExternalLink className="h-3 w-3" /> Read full article
                             </a>
                           </CollapsibleContent>
@@ -284,7 +354,7 @@ export default function StockDetails() {
             </Card>
           </div>
 
-          {/* AI Summary Panel */}
+          {/* ── AI analysis ── */}
           <div>
             <Card>
               <CardHeader>
@@ -294,7 +364,9 @@ export default function StockDetails() {
                 {!aiSummary ? (
                   <Button onClick={fetchAiSummary} disabled={loadingAI} className="w-full">
                     {loadingAI ? (
-                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analyzing...</>
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analyzing…
+                      </>
                     ) : (
                       "Get AI Summary"
                     )}
@@ -304,16 +376,35 @@ export default function StockDetails() {
                     <CollapsibleTrigger asChild>
                       <Button variant="outline" className="w-full">
                         <span className="mr-2">AI Summary</span>
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", isAiSummaryOpen && "rotate-180")} />
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform",
+                            isAiSummaryOpen && "rotate-180"
+                          )}
+                        />
                       </Button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="mt-4">
                       <div className="space-y-2">
-                        <Badge className={`mb-2 ${aiSummary.sentiment=='positive'?"bg-green-400":aiSummary.sentiment=="negative"?"bg-red-400":"bg-slate-400"}`}>Sentiment: {aiSummary.sentiment}</Badge>
+                        <Badge
+                          className={`mb-2 ${
+                            aiSummary.sentiment === "positive"
+                              ? "bg-green-400"
+                              : aiSummary.sentiment === "negative"
+                              ? "bg-red-400"
+                              : "bg-slate-400"
+                          }`}
+                        >
+                          Sentiment: {aiSummary.sentiment}
+                        </Badge>
                         <ul className="list-disc pl-4 space-y-1 text-sm">
-                          {aiSummary.keyPoints.map((point: string, i: number) => <li key={i}>{point}</li>)}
+                          {aiSummary.keyPoints.map((p: string, i: number) => (
+                            <li key={i}>{p}</li>
+                          ))}
                         </ul>
-                        <p className="text-sm text-muted-foreground mt-2">{aiSummary.potentialImpact}</p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {aiSummary.potentialImpact}
+                        </p>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
