@@ -102,11 +102,11 @@ export class StockService {
       
       return Object.entries(timeSeries).map(([date, data]: [string, any]) => ({
         date,
-        open: parseFloat(data['1. open']),
+        // open: parseFloat(data['1. open']),
         high: parseFloat(data['2. high']),
-        low: parseFloat(data['3. low']),
-        close: parseFloat(data['4. close']),
-        volume: parseInt(data['5. volume'])
+        // low: parseFloat(data['3. low']),
+        // close: parseFloat(data['4. close']),
+        // volume: parseInt(data['5. volume'])
       })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     } catch (error) {
       console.error('Error fetching stock history:', error);
