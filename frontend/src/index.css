@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* StockPulse Design System - Modern dark theme with stock market colors */
+
+@layer base {
+  :root {
+    /* Base colors - Dark theme optimized for stock data */
+    --background: 222 47% 3%;
+    --foreground: 210 40% 95%;
+
+    --card: 222 47% 4%;
+    --card-foreground: 210 40% 95%;
+
+    --popover: 222 47% 5%;
+    --popover-foreground: 210 40% 95%;
+
+    /* Primary - Modern blue for actions */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 3%;
+
+    /* Secondary - Subtle backgrounds */
+    --secondary: 222 47% 8%;
+    --secondary-foreground: 210 40% 90%;
+
+    --muted: 222 47% 6%;
+    --muted-foreground: 210 20% 60%;
+
+    --accent: 222 47% 9%;
+    --accent-foreground: 210 40% 95%;
+
+    /* Stock colors */
+    --bullish: 142 76% 36%;        /* Green for gains */
+    --bullish-foreground: 210 40% 95%;
+    --bearish: 0 84% 60%;          /* Red for losses */
+    --bearish-foreground: 210 40% 95%;
+    
+    /* Gradients for visual appeal */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 3%), hsl(222 47% 6%));
+    --gradient-bullish: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 60% 30%));
+    --gradient-bearish: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 70% 50%));
+    
+    /* Shadows for depth */
+    --shadow-lg: 0 10px 25px -3px hsl(222 47% 2% / 0.3), 0 4px 6px -2px hsl(222 47% 2% / 0.05);
+    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.2);
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 95%;
+
+    --border: 222 47% 12%;
+    --input: 222 47% 8%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar for dashboard */
+    --sidebar-background: 222 47% 4%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 47% 3%;
+    --sidebar-accent: 222 47% 8%;
+    --sidebar-accent-foreground: 210 40% 95%;
+    --sidebar-border: 222 47% 12%;
+    --sidebar-ring: 217 91% 60%;
+    
+    /* Animation timings */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease;
+  }
+
+  /* Custom utility classes for StockPulse */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  /* Stock price animations */
+  .price-up {
+    @apply text-green-500;
+    animation: pulse-green 0.6s ease-in-out;
+  }
+  
+  .price-down {
+    @apply text-red-500;
+    animation: pulse-red 0.6s ease-in-out;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
