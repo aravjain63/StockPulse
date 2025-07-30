@@ -80,13 +80,13 @@ export default function StockDetails() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log("Frontend Raw History Data:", res.data); // Add this line
+        // console.log("Frontend Raw History Data:", res.data); // Add this line
         const formatted = res.data.map((entry: any) => ({
           time: entry.date,
           price: entry.close,
         }));
         setChartData(formatted);
-        console.log("Chart Data:", formatted); // Add this line for debugging
+        // console.log("Chart Data:", formatted); // Add this line for debugging
       })
       .catch((err) => {
         console.error(err);
