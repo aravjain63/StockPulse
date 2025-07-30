@@ -29,12 +29,11 @@ export default function Topbar() {
     if (!q) return setResults([]);
     try {
       const res = await fetch(
-        `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${q}&apikey=${
-          import.meta.env.VITE_ALPHA_VANTAGE_API_KEY
-        }`
+                `https://financialmodelingprep.com/api/v3/search?query=${q}&limit=10&exchange=NASDAQ&apikey=${import.meta.env.VITE_FINANCIAL_MODELING_PREP_API_KEY}`
+
       );
       const data = await res.json();
-      setResults(data.bestMatches || []);
+      setResults(data || []);
     } catch (err) {
       console.error("Search error:", err);
     }
@@ -90,7 +89,7 @@ export default function Topbar() {
           </button>
         </div>
 
-        {/* ─ Navigation / Discover search ─ */}
+ {/* ─ Navigation / Discover search ─ */}
         <nav className="relative flex items-center space-x-1 text-sm font-medium">
           <Button
             variant={searchOpen ? "default" : "ghost"}
@@ -119,12 +118,12 @@ export default function Topbar() {
                 <ul className="mt-2 max-h-60 overflow-y-auto text-sm">
                   {results.map((match) => (
                     <li
-                      key={match["1. symbol"]}
-                      onClick={() => handleSymbolClick(match["1. symbol"])}
+                      key={match.symbol}
+                      onClick={() => handleSymbolClick(match.symbol)}
                       className="cursor-pointer rounded-md px-2 py-1 hover:bg-muted"
-                    >
-                      <strong>{match["1. symbol"]}</strong> –{" "}
-                      {match["2. name"].slice(0, 40)}
+                    > 
+                      <strong>{match.symbol}</strong> –{" "}
+                      {match.name.slice(0, 40)}
                     </li>
                   ))}
                 </ul>

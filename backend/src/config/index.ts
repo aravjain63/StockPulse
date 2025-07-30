@@ -10,6 +10,7 @@ export const config = {
   apiKeys: {
     alphaVantage: process.env.ALPHA_VANTAGE_API_KEY,
     newsApi: process.env.NEWS_API_KEY,
-    gemini: process.env.GEMINI_API_KEY
+    gemini: process.env.GEMINI_API_KEY,
+    financialModelingPrep: process.env.FINANCIAL_MODELING_PREP_API_KEY,
   }
 };

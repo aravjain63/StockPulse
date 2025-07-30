@@ -38,7 +38,7 @@ export default function StockDetails() {
   const [loadingNews, setLoadingNews] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
 
-  const [alphaError, setAlphaError] = useState(false); // 🔑 NEW
+  
 
   const token = localStorage.getItem("token");
 
@@ -62,22 +62,17 @@ export default function StockDetails() {
     axios
       .get(`${baseUrl}/stocks/${symbol}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
-        if (res.data?.message === "Failed to fetch stock quote") {
-          setAlphaError(true);
-          return;
-        }
         setStockData(res.data);
       })
       .catch((err) => {
         console.error(err);
-        setAlphaError(true);
       })
       .finally(() => setLoadingStock(false));
   }, [symbol, token]);
 
   /* ─────────────────── fetch chart history ─────────────────── */
   useEffect(() => {
-    if (!symbol || !token || !selectedPeriod || alphaError) return;
+    if (!symbol || !token || !selectedPeriod) return;
     setLoadingChart(true);
 
     axios
@@ -85,26 +80,23 @@ export default function StockDetails() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        if (res.data?.message === "Failed to fetch stock quote") {
-          setAlphaError(true);
-          return;
-        }
+        console.log("Frontend Raw History Data:", res.data); // Add this line
         const formatted = res.data.map((entry: any) => ({
           time: entry.date,
-          price: entry.high,
+          price: entry.close,
         }));
         setChartData(formatted);
+        console.log("Chart Data:", formatted); // Add this line for debugging
       })
       .catch((err) => {
         console.error(err);
-        setAlphaError(true);
       })
       .finally(() => setLoadingChart(false));
-  }, [symbol, selectedPeriod, token, alphaError]);
+  }, [symbol, selectedPeriod, token]);
 
   /* ─────────────────── fetch news ─────────────────── */
   useEffect(() => {
-    if (!symbol || !token || !selectedDate || alphaError) return;
+    if (!symbol || !token || !selectedDate) return;
     setLoadingNews(true);
 
     const dateStr = selectedDate.toISOString().split("T")[0];
@@ -115,7 +107,7 @@ export default function StockDetails() {
       .then((res) => setNews(res.data))
       .catch(console.error)
       .finally(() => setLoadingNews(false));
-  }, [symbol, selectedDate, token, alphaError]);
+  }, [symbol, selectedDate, token]);
 
   /* ─────────────────── AI summary ─────────────────── */
   const fetchAiSummary = async () => {
@@ -142,10 +134,7 @@ export default function StockDetails() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
-  /* ─────────────────── redirect on Alpha Vantage error ─────────────────── */
-  useEffect(() => {
-    if (alphaError) navigate("/error", { replace: true });
-  }, [alphaError, navigate]);
+  
 
   /* ─────────────────── render ─────────────────── */
   if (!token) return null; // safeguard
@@ -249,6 +238,8 @@ export default function StockDetails() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 12 }}
+                    interval="preserveStartEnd"
+                    tickFormatter={(tick, index) => (index % 10 === 0 ? tick : '')}
                   />
                   <YAxis
                     axisLine={false}
@@ -270,7 +261,7 @@ export default function StockDetails() {
                     dataKey="price"
                     stroke="hsl(var(--primary))"
                     strokeWidth={3}
-                    fill="url(#priceGradient)"
+                    fill="hsl(var(--primary))"
                   />
                 </AreaChart>
               </ResponsiveContainer>
